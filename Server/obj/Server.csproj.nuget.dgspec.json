@@ -4,6 +4,58 @@
     "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\Server\\Server.csproj": {}
   },
   "projects": {
+    "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj",
+        "projectName": "ServerInterfaces",
+        "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj",
+        "packagesPath": "C:\\Users\\anon2\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\anon2\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.2"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.2": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.2": {
+          "dependencies": {
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    },
     "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\Server\\Server.csproj": {
       "version": "1.0.0",
       "restore": {
@@ -29,7 +81,70 @@
         },
         "frameworks": {
           "netcoreapp2.2": {
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj": {
+                "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj"
+              },
+              "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj": {
+                "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.2": {
+          "dependencies": {
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    },
+    "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj",
+        "projectName": "TicTacToy1.0",
+        "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj",
+        "packagesPath": "C:\\Users\\anon2\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\anon2\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.2"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.2": {
+            "projectReferences": {
+              "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj": {
+                "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

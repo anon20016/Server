@@ -7,14 +7,41 @@
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "Server/1.0.0": {
+        "dependencies": {
+          "ServerInterfaces": "1.0.0",
+          "TicTacToy1.0": "1.0.0"
+        },
         "runtime": {
           "Server.dll": {}
+        }
+      },
+      "ServerInterfaces/1.0.0": {
+        "runtime": {
+          "ServerInterfaces.dll": {}
+        }
+      },
+      "TicTacToy1.0/1.0.0": {
+        "dependencies": {
+          "ServerInterfaces": "1.0.0"
+        },
+        "runtime": {
+          "TicTacToy1.0.dll": {}
         }
       }
     }
   },
   "libraries": {
     "Server/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ServerInterfaces/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TicTacToy1.0/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

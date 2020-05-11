@@ -14,24 +14,24 @@ namespace Server
 
         private TcpClient ClientSocket;
         private NetworkStream networkStream;
-        private byte[] bytes;       // Data buffer for incoming data.
+        private byte[] bytes;                           // Data buffer for incoming data.
         private StringBuilder sb = new StringBuilder(); // Received data string.
-        private string data = null; // Incoming data from the client.
+        private GameHandler game;
 
-        public ClientHandler(TcpClient ClientSocket, ClientService serv )
+        public ClientHandler(TcpClient ClientSocket, ClientService serv)
         {
             StatusClient = Status.Guest;
-            Name = null;
+            Name = "Guest" + (new Random()).Next(1000).ToString();
             ClientSocket.ReceiveTimeout = 100; // 100 miliseconds
             this.ClientSocket = ClientSocket;
             networkStream = ClientSocket.GetStream();
             bytes = new byte[ClientSocket.ReceiveBufferSize];
             service = serv;
+            game = serv.games;
         }
 
         public void Process()
         {
-
             try
             {
                 int BytesRead = networkStream.Read(bytes, 0, (int)bytes.Length);
@@ -41,7 +41,6 @@ namespace Server
                 else
                     // All the data has arrived; put it in response.
                     ProcessDataReceived();
-
             }
             catch (IOException)
             {
@@ -57,147 +56,177 @@ namespace Server
 
         }  // Process()
 
+        private void SendClient(StringBuilder response)
+        {
+            if (response.Length == 0)
+            {
+                response.Append("None");
+            }
+            byte[] sendBytes = Encoding.ASCII.GetBytes(response.ToString());
+            networkStream.Write(sendBytes, 0, sendBytes.Length);            
+        }
+        private void SendClient(string response)
+        {
+            if (response.Length == 0)
+            {
+                response = "None";
+            }
+            byte[] sendBytes = Encoding.ASCII.GetBytes(response);
+            networkStream.Write(sendBytes, 0, sendBytes.Length);
+        }
+
+        // handling comands
+        private void CommandQuit()
+        {
+            Close();
+        }
+        private void CommandStatus()
+        {
+            SendMessage(StatusClient.ToString());
+        }
+        private void CommandAuth()
+        {
+            if (sb.Length < 6)
+            {
+                SendMessage(ResponseType.AuthFalse.ToString());
+            }
+            else
+            {
+                switch (StatusClient)
+                {
+                    case Status.Guest:
+                        if (service.HasName(sb.ToString().Substring(5)))
+                        {
+                            SendMessage(ResponseType.AuthFalse.ToString());
+                        }
+                        else
+                        {
+                            SendMessage(ResponseType.AuthTrue.ToString());
+                            Name = sb.ToString().Substring(5);
+                            StatusClient = Status.Verified;
+                        }
+                        break;
+                    case Status.Verified:
+                        StatusClient = Status.Waiting;
+                        SendMessage(ResponseType.AuthFalse.ToString());
+                        break;
+                    case Status.Waiting:
+                        SendMessage(ResponseType.AuthFalse.ToString());
+                        break;
+                    case Status.Playing:
+                        SendMessage(ResponseType.AuthFalse.ToString());
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        private void CommandStop()
+        {
+            switch (StatusClient)
+            {
+                case Status.Guest:
+                    SendMessage(ResponseType.StopFalse.ToString());
+                    break;
+                case Status.Verified:
+                    StatusClient = Status.Waiting;
+                    SendMessage(ResponseType.StopFalse.ToString());
+                    break;
+                case Status.Waiting:
+                    SendMessage(ResponseType.StopTrue.ToString());
+
+                    break;
+                case Status.Playing:
+                    SendMessage(ResponseType.StopTrue.ToString());
+                    break;
+                default:
+                    break;
+            }
+        }
+        private void CommandPlay()
+        {
+            switch (StatusClient)
+            {
+                case Status.Guest:
+                    SendMessage(ResponseType.PlayFalse.ToString());
+                    break;
+                case Status.Verified:
+                    StatusClient = Status.Waiting;
+                    SendMessage(ResponseType.PlayTrue.ToString());
+                    break;
+                case Status.Waiting:
+                    SendMessage(ResponseType.PlayFalse.ToString());
+                    break;
+                case Status.Playing:
+                    SendMessage(ResponseType.PlayFalse.ToString());
+                    break;
+                default:
+                    break;
+            }
+        }
+        //
+
         private void ProcessDataReceived()
         {
             if (sb.Length > 0)
             {
-                bool bQuit = (String.Compare(sb.ToString(), "quit", true) == 0);
-                bool BAuth = (sb.Length > 4) && (String.Compare(sb.ToString().Substring(0, 4), "auth", true) == 0);
-                bool BPlay = (String.Compare(sb.ToString(), "play", true) == 0);
-                bool GetStatus = (String.Compare(sb.ToString(), "status", true) == 0);
-                bool BStop = (String.Compare(sb.ToString(), "stop", true) == 0);
-
-
-                data = sb.ToString();
-
-
-                Console.WriteLine("Text received from client:");
-                Console.WriteLine(data);
-
                 StringBuilder response = new StringBuilder();
-                //response.Append("Received at ");
-                //response.Append(DateTime.Now.ToString());
-                // 
-                //response.Append(data);                
 
-                // Client stop processing  
-                if (BStop)
+                if (String.Compare(sb.ToString(), "quit", true) == 0)
                 {
-                    switch (StatusClient)
+                    CommandQuit();
+                } //bQuit
+                if ((sb.Length > 4) && (String.Compare(sb.ToString().Substring(0, 4), "auth", true) == 0)){
+                    CommandAuth();
+                } //BAuth
+                if (String.Compare(sb.ToString(), "play", true) == 0)
+                {
+                    CommandPlay();
+                } //BPlay
+                if (String.Compare(sb.ToString(), "status", true) == 0)
+                {
+                    CommandStatus();
+                } //GetStatus
+                if (String.Compare(sb.ToString(), "stop", true) == 0)
+                {
+                    CommandStop();
+                } //BStop
+                if (game.HasPlayer(Name))
+                {
+                    if (game.CheckFormat(Name, sb.ToString()))
                     {
-                        case Status.Guest:
-                            response.Append(ResponseType.StopFalse.ToString());
-                            break;
-                        case Status.Verified:
-                            StatusClient = Status.Waiting;
-                            response.Append(ResponseType.StopFalse.ToString());                             
-                            break;
-                        case Status.Waiting:
-                            response.Append(ResponseType.StopTrue.ToString());
-                             
-                            break;
-                        case Status.Playing:
-                            response.Append(ResponseType.StopTrue.ToString());                             
-                            break;
-                        default:
-                            break;
-                    }
-
-                }
-                if (GetStatus)
-                {
-                    response.Append(StatusClient.ToString());
-                     
-                }
-                if (bQuit)
-                {
-                    networkStream.Close();
-                    ClientSocket.Close();
-                }
-                if (BAuth)
-                {
-                    if (sb.Length < 6)
-                    {
-                        response.Append(ResponseType.AuthFalse.ToString());
-                    }
-                    else
-                    {
-                        switch (StatusClient)
-                        {
-                            case Status.Guest:
-                                if (service.HasName(sb.ToString().Substring(5)))
-                                {
-                                    response.Append(ResponseType.AuthFalse.ToString());
-                                }
-                                else
-                                {
-                                    response.Append(ResponseType.AuthTrue.ToString());
-                                    Name = sb.ToString().Substring(5);
-                                    StatusClient = Status.Verified;
-                                }
-                                break;
-                            case Status.Verified:
-                                StatusClient = Status.Waiting;
-                                response.Append(ResponseType.AuthFalse.ToString());
-                                break;
-                            case Status.Waiting:
-                                response.Append(ResponseType.AuthFalse.ToString());
-
-                                break;
-                            case Status.Playing:
-                                response.Append(ResponseType.AuthFalse.ToString());
-
-                                break;
-                            default:
-                                break;
-                        }
+                        game.Act(this, sb.ToString());                        
                     }
                 }
-                if (BPlay)
-                {
-                    switch (StatusClient)
-                    {
-                        case Status.Guest:
-                            response.Append(ResponseType.PlayFalse.ToString());                             
-                            break;
-                        case Status.Verified:
-                            StatusClient = Status.Waiting;
-                            response.Append(ResponseType.PlayTrue.ToString());                             
-                            break;
-                        case Status.Waiting:
-                            response.Append(ResponseType.PlayFalse.ToString());                             
-                            break;
-                        case Status.Playing:
-                            response.Append(ResponseType.PlayFalse.ToString());                             
-                            break;
-                        default:
-                            break;
-                    }
-                    
-                }
-               
-                if (response.Length == 0)
-                {
-                    response.Append(data);
-                }
+                                
+                Console.WriteLine("{0} : {1}", Name, sb.ToString());
+
                 sb.Length = 0;
-
-                byte[] sendBytes = Encoding.ASCII.GetBytes(response.ToString());
-                networkStream.Write(sendBytes, 0, sendBytes.Length);
             }
         }
 
-        public void StartPlaying(string nameOpponent)
+        public void StartPlaying(string nameOpponent, int idGame)
+        {
+            SendMessage("Start playing with " + nameOpponent);
+            SendMessage(ResponseType.GameStart.ToString());
+            StatusClient = Status.Playing;
+        }
+        public void StopPlaying(string nameOpponent, int idGame)
+        {
+            SendMessage("Game ended");
+            SendMessage(ResponseType.GameStop.ToString());
+
+            StatusClient = Status.Verified;
+        }
+
+        public void StopPlayingDisk()
         {
             try
             {
-                StringBuilder response = new StringBuilder();
-                response.Append("Start playing with ");
-                response.Append(nameOpponent);
-                StatusClient = Status.Playing;
-                byte[] sendBytes = Encoding.ASCII.GetBytes(response.ToString());
-                networkStream.Write(sendBytes, 0, sendBytes.Length);
-            } 
+                StatusClient = Status.Verified;
+                SendClient("Opponent disconected :(");
+                SendClient(ResponseType.GameStop.ToString());
+            }
             catch (IOException)
             {
                 Console.WriteLine("IOError");
@@ -207,16 +236,26 @@ namespace Server
                 Console.WriteLine(e.Message);
             }
         }
-        public void StopPlaying(string msg)
+        public void SystemMessage(string msg)
+        {
+            try
+            {               
+                SendClient(msg);
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("IOError");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+        public void SendMessage(string msg)
         {
             try
             {
-                StringBuilder response = new StringBuilder();
-                response.Append("Game ended ");
-                response.Append(msg);
-                StatusClient = Status.Verified;
-                byte[] sendBytes = Encoding.ASCII.GetBytes(response.ToString());
-                networkStream.Write(sendBytes, 0, sendBytes.Length);
+                SendClient(msg);
             }
             catch (IOException)
             {
@@ -241,6 +280,5 @@ namespace Server
                 return ClientSocket.Connected;
             }
         }
-
     }
 }

@@ -20,3 +20,8 @@ C:\Users\anon2\OneDrive\Documents\Server\Server\obj\Debug\netcoreapp2.2\Server.A
 C:\Users\anon2\OneDrive\Documents\Server\Server\obj\Debug\netcoreapp2.2\Server.AssemblyInfo.cs
 C:\Users\anon2\OneDrive\Documents\Server\Server\obj\Debug\netcoreapp2.2\Server.dll
 C:\Users\anon2\OneDrive\Documents\Server\Server\obj\Debug\netcoreapp2.2\Server.pdb
+C:\Users\anon2\OneDrive\Documents\Server\Server\bin\Debug\netcoreapp2.2\ServerInterfaces.dll
+C:\Users\anon2\OneDrive\Documents\Server\Server\bin\Debug\netcoreapp2.2\TicTacToy1.0.dll
+C:\Users\anon2\OneDrive\Documents\Server\Server\bin\Debug\netcoreapp2.2\ServerInterfaces.pdb
+C:\Users\anon2\OneDrive\Documents\Server\Server\bin\Debug\netcoreapp2.2\TicTacToy1.0.pdb
+C:\Users\anon2\OneDrive\Documents\Server\Server\obj\Debug\netcoreapp2.2\Server.csproj.CopyComplete

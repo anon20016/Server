@@ -1,32 +1,41 @@
-﻿using System;
+﻿using ServerInterfaces;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using TicTacToyNamespace;
 
 namespace Server
 {
     class ClientService
     {
         const int NUM_OF_THREAD = 10;
-
         private ClientConnectionPool ConnectionPool;
         private bool ContinueProcess = false;
         private Thread[] ThreadTask = new Thread[NUM_OF_THREAD];
-        private ClientHandler waiting;
+
         private List<string> Names;
-        private List<Tuple<ClientHandler, ClientHandler>> games;
+        private List<ClientHandler> verifiedPool;
+        private List<ClientHandler> onlinePool;
+        private List<ClientHandler> waitingPool;
+        private List<ClientHandler> playingPool;
 
         public bool HasName(string name)
         {
             return Names.Contains(name);
         }
 
+        public GameHandler games;
         public ClientService(ClientConnectionPool ConnectionPool)
         {
+            verifiedPool = new List<ClientHandler>();
+            onlinePool = new List<ClientHandler>();
+            waitingPool = new List<ClientHandler>();
+            playingPool = new List<ClientHandler>();
+
             this.ConnectionPool = ConnectionPool;
-            waiting = null;
             Names = new List<string>(0);
-            games = new List<Tuple<ClientHandler, ClientHandler>>();
+            games = new GameHandler();
         }
 
         public void Start()
@@ -37,6 +46,42 @@ namespace Server
             {
                 ThreadTask[i] = new Thread(new ThreadStart(this.Process));
                 ThreadTask[i].Start();
+            }
+            var FindPlayers = new Thread(new ThreadStart(findPlayers));
+
+            FindPlayers.Start();
+        }
+
+        public void BroadcastMsg(string s)
+        {
+            foreach (var i in onlinePool)
+            {
+                i.SystemMessage(s);
+            }
+        }
+
+        private void findPlayers()
+        {
+            while (true)
+            {
+                var r = waitingPool.Count;
+                lock (waitingPool)
+                {
+                    if (waitingPool.Count > 1)
+                    {
+                        var first = waitingPool[0];
+                        var second = waitingPool[1];
+                        
+                        waitingPool.Remove(first);
+                        waitingPool.Remove(second);
+
+                        playingPool.Add(first);
+                        playingPool.Add(second);
+
+                        games.StartGame(first, second);
+                    }
+                }
+                Thread.Sleep(100);
             }
         }
 
@@ -53,32 +98,24 @@ namespace Server
                 if (client != null)
                 {
                     client.Process();
-                    
-                    if (client.StatusClient == Status.Waiting)
+                    if (client.StatusClient == Status.Waiting && !waitingPool.Contains(client))
                     {
-                        if (waiting != null) {
-                            if (!waiting.Alive)
-                            {
-                                waiting = null;
-                            }
-                            else
-                            {
-                                if (client.Alive && client.Name != waiting.Name)
-                                {
-                                    client.StartPlaying(waiting.Name);
-                                    waiting.StartPlaying(client.Name);
-                                    games.Add(new Tuple<ClientHandler, ClientHandler>(waiting, client));
-                                    waiting = null;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            waiting = client;
-                        }                    
+                        waitingPool.Add(client);
                     }
+                    if (client.StatusClient != Status.Guest && !verifiedPool.Contains(client))
+                    {
+                        verifiedPool.Add(client);
+                    }
+                                         
                     if (client.Alive)
                     {
+                        lock (onlinePool)
+                        {
+                            if (!onlinePool.Contains(client))
+                            {
+                                onlinePool.Add(client);
+                            }
+                        }
                         ConnectionPool.Enqueue(client);
                         if (!Names.Contains(client.Name))
                         {
@@ -86,20 +123,54 @@ namespace Server
                         }
                     }
                     else
-                    {
-                        if (client.StatusClient == Status.Playing)
-                        {
-                            var opp = GetOpponent(client);
-                            games.Remove(new Tuple<ClientHandler, ClientHandler>(opp, client));
-                            games.Remove(new Tuple<ClientHandler, ClientHandler>(client, opp));
-                            opp.StopPlaying("Opponent has left the game");
-                        }
+                    {       
+                        ClientDisconnect(client);
                         Console.WriteLine(client.Name + " disconnected");
-                        Names.Remove(client.Name);
                     }
                 }
 
                 Thread.Sleep(100);
+            }
+        }
+
+        private void ClientDisconnect(ClientHandler client)
+        {
+            if (client.StatusClient == Status.Playing)
+            {
+                var opp = games.GetOpponent(client.Name);
+                lock (opp)
+                {
+                    lock (playingPool)
+                    {
+                        playingPool.Remove(client);
+                    }
+                    lock (games)
+                    {
+                        games.StopGame(client.Name);
+                    }
+                    GetClientByName(opp).StopPlayingDisk();
+                }
+            }
+
+            lock (Names)
+            {
+                Names.Remove(client.Name);
+            }
+            lock (verifiedPool)
+            {
+                verifiedPool.Remove(client);
+            }
+            lock (onlinePool)
+            {
+                onlinePool.Remove(client);
+            }
+            lock (waitingPool)
+            {
+                waitingPool.Remove(client);
+            }
+            lock (waitingPool)
+            {
+                playingPool.Remove(client);
             }
         }
 
@@ -121,20 +192,19 @@ namespace Server
             }
         }
 
-        private ClientHandler GetOpponent(ClientHandler s)
+
+        private ClientHandler GetClientByName(string x)
         {
-            foreach (var item in games)
+            foreach (var i in onlinePool)
             {
-                if (item.Item1 == s)
+                if (i.Name == x)
                 {
-                    return item.Item2;
-                }
-                if (item.Item2 == s)
-                {
-                    return item.Item1;
+                    return i;
                 }
             }
             return null;
         }
     } // class ClientService
+
+    
 }

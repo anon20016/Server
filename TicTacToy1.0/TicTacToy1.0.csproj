@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>TicTacToy1._0</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ServerInterfaces\ServerInterfaces.csproj" />
-    <ProjectReference Include="..\TicTacToy1.0\TicTacToy1.0.csproj" />
   </ItemGroup>
 
 </Project>

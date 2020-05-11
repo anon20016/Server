@@ -207,6 +207,29 @@
         "build": {
           "build/netstandard2.0/NETStandard.Library.targets": {}
         }
+      },
+      "ServerInterfaces/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v2.2",
+        "compile": {
+          "bin/placeholder/ServerInterfaces.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ServerInterfaces.dll": {}
+        }
+      },
+      "TicTacToy1.0/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v2.2",
+        "dependencies": {
+          "ServerInterfaces": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/TicTacToy1.0.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/TicTacToy1.0.dll": {}
+        }
       }
     }
   },
@@ -678,11 +701,23 @@
         "netstandard.library.2.0.3.nupkg.sha512",
         "netstandard.library.nuspec"
       ]
+    },
+    "ServerInterfaces/1.0.0": {
+      "type": "project",
+      "path": "../ServerInterfaces/ServerInterfaces.csproj",
+      "msbuildProject": "../ServerInterfaces/ServerInterfaces.csproj"
+    },
+    "TicTacToy1.0/1.0.0": {
+      "type": "project",
+      "path": "../TicTacToy1.0/TicTacToy1.0.csproj",
+      "msbuildProject": "../TicTacToy1.0/TicTacToy1.0.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.2": [
-      "Microsoft.NETCore.App >= 2.2.0"
+      "Microsoft.NETCore.App >= 2.2.0",
+      "ServerInterfaces >= 1.0.0",
+      "TicTacToy1.0 >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -714,7 +749,14 @@
       },
       "frameworks": {
         "netcoreapp2.2": {
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj": {
+              "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\ServerInterfaces\\ServerInterfaces.csproj"
+            },
+            "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj": {
+              "projectPath": "C:\\Users\\anon2\\OneDrive\\Documents\\Server\\TicTacToy1.0\\TicTacToy1.0.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

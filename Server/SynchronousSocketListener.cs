@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace Server
 {
@@ -21,19 +22,29 @@ namespace Server
             ClientService ClientTask;
             // Client Connections Pool
             ClientConnectionPool ConnectionPool = new ClientConnectionPool();
-
             // Client Task to handle client requests
             ClientTask = new ClientService(ConnectionPool);
-
             ClientTask.Start();
 
-            TcpListener listener = new TcpListener(IPAddress.Parse(adress), portNum);
+            string DataToSend = "";
+            new Thread(() =>
+            {
+                while (DataToSend != "quit")
+                {
+                    Console.WriteLine("\nType a text to be sent:");
+                    DataToSend = Console.ReadLine();
+                    if (DataToSend.Length != 0)
+                    {
+                        ClientTask.BroadcastMsg(DataToSend);
+                    }
+                }
+            }).Start();
+
+            TcpListener listener = new TcpListener(IPAddress.Parse(adress), portNum);  
             try
             {
                 listener.Start();
-
                 int ClientNbr = 0;
-
                 // Start listening for connections.
                 Console.WriteLine("Waiting for a connection...");
                 while (true)

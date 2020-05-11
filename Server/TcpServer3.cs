@@ -18,7 +18,11 @@ namespace Server
         StopTrue,
         StopFalse,
         PlayTrue, 
-        PlayFalse
+        PlayFalse, 
+        GameStart,
+        GameStop,
+        GameWin, 
+        GameLose
     }
 
     class TCPSerever
