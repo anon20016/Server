@@ -54,7 +54,7 @@ namespace Server
                 Console.WriteLine("Conection is broken!");
             }
 
-        }  // Process()
+        }  // Process()H
 
         private void SendClient(StringBuilder response)
         {
@@ -191,8 +191,6 @@ namespace Server
                 {
                     CommandStop();
                 } //BStop
-
-                game.Act(this, sb.ToString());
 
                 if (game.HasPlayer(Name))
                 {
