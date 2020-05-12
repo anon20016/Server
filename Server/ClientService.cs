@@ -14,7 +14,6 @@ namespace Server
         private bool ContinueProcess = false;
         private Thread[] ThreadTask = new Thread[NUM_OF_THREAD];
 
-        private List<string> Names;
         private List<ClientHandler> verifiedPool;
         private List<ClientHandler> onlinePool;
         private List<ClientHandler> waitingPool;
@@ -22,7 +21,7 @@ namespace Server
 
         public bool HasName(string name)
         {
-            return Names.Contains(name);
+            return onlinePool.Exists(new Predicate<ClientHandler>((ClientHandler obj) => { return obj.Name == name; }));
         }
 
         public GameHandler games;
@@ -34,7 +33,6 @@ namespace Server
             playingPool = new List<ClientHandler>();
 
             this.ConnectionPool = ConnectionPool;
-            Names = new List<string>(0);
             games = new GameHandler();
         }
 
@@ -47,7 +45,7 @@ namespace Server
                 ThreadTask[i] = new Thread(new ThreadStart(this.Process));
                 ThreadTask[i].Start();
             }
-            var FindPlayers = new Thread(new ThreadStart(findPlayers));
+            var FindPlayers = new Thread(new ThreadStart(this.FindPlayers));
 
             FindPlayers.Start();
         }
@@ -60,11 +58,10 @@ namespace Server
             }
         }
 
-        private void findPlayers()
+        private void FindPlayers()
         {
             while (true)
             {
-                var r = waitingPool.Count;
                 lock (waitingPool)
                 {
                     if (waitingPool.Count > 1)
@@ -116,11 +113,7 @@ namespace Server
                                 onlinePool.Add(client);
                             }
                         }
-                        ConnectionPool.Enqueue(client);
-                        if (!Names.Contains(client.Name))
-                        {
-                            Names.Add(client.Name);
-                        }
+                        ConnectionPool.Enqueue(client);                        
                     }
                     else
                     {       
@@ -147,15 +140,12 @@ namespace Server
                     lock (games)
                     {
                         games.StopGame(client.Name);
+                        client.StopPlayingDisk();
                     }
                     GetClientByName(opp).StopPlayingDisk();
                 }
             }
-
-            lock (Names)
-            {
-                Names.Remove(client.Name);
-            }
+                        
             lock (verifiedPool)
             {
                 verifiedPool.Remove(client);
@@ -191,18 +181,15 @@ namespace Server
                 Console.WriteLine("Client connection is closed!");
             }
         }
-
-
-        private ClientHandler GetClientByName(string x)
+        
+        private ClientHandler GetClientByName(string name)
         {
-            foreach (var i in onlinePool)
-            {
-                if (i.Name == x)
-                {
-                    return i;
-                }
-            }
-            return null;
+            return onlinePool.Find(new Predicate<ClientHandler>((ClientHandler obj) => { return obj.Name == name; }));
+        }
+
+        public bool HasPlayer(string name)
+        {
+            return GetClientByName(name) != null;
         }
     } // class ClientService
 

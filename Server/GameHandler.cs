@@ -1,8 +1,6 @@
 ﻿using ServerInterfaces;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 using TicTacToyNamespace;
 
 namespace Server
@@ -17,7 +15,7 @@ namespace Server
         {
             foreach (var i in list)
             {
-                if (i.Key.HasPlayer(x))
+                if (i.Value.Item1.Name == x || i.Value.Item2.Name == x)
                 {
                     return i.Key;
                 }
@@ -43,7 +41,7 @@ namespace Server
                 {
                     sc.StartPlaying(fr.Name, 0);
                 }
-                fr.SystemMessage("Your Turn");
+                fr.Turn();
                 return true;
             }
             else
@@ -51,53 +49,34 @@ namespace Server
                 return false;
             }
         }
-        public bool StopGame(string x)
+
+        public void StopGame(string x)
         {
-            foreach (var item in list)
-            {
-                if (item.Key.HasPlayer(x))
-                {
-                    lock (item.Value.Item1)
-                    {
-                        item.Value.Item1.StopPlaying(item.Value.Item2.Name, 0);
-                    }
-                    lock (item.Value.Item2)
-                    {
-                        item.Value.Item2.StopPlaying(item.Value.Item1.Name, 0);
-                    }
-                    list.Remove(item.Key);
-                    return true;
-                }
-            }
-            return false;
+            StopGame(GetGame(x));
         }
         private void StopGame(IGame x)
         {
             list.Remove(x);
         }
 
-        public bool HasPlayer(string x)
+        public ClientHandler GetPlayer(string x)
         {
             foreach (var i in list)
             {
-                if (i.Key.HasPlayer(x))
+                if (i.Value.Item1.Name == x)
                 {
-                    return true;
+                    return i.Value.Item1;
                 }
-            }
-            return false;
-        }
-        public string GetOpponent(string x)
-        {
-            foreach (var i in list)
-            {
-                var opp = i.Key.GetOpponent(x);
-                if (opp != null)
+                if (i.Value.Item2.Name == x)
                 {
-                    return opp;
+                    return i.Value.Item2;
                 }
             }
             return null;
+        }
+        public string GetOpponent(string x)
+        {            
+            return GetOpponent(GetPlayer(x)).Name;
         }
         public ClientHandler GetOpponent(ClientHandler x)
         {
@@ -115,6 +94,11 @@ namespace Server
             return null;
         }
 
+
+        public bool HasPlayer(string name)
+        {
+            return GetPlayer(name) != null;
+        }
         public bool CheckFormat(string name, string msg)
         {
             return GetGame(name).FormatAct().IsMatch(msg);
@@ -122,8 +106,13 @@ namespace Server
 
         public void Act(ClientHandler client, string msg)
         {
+
             var name = client.Name;
             var game = GetGame(name);
+            if (game == null || !CheckFormat(name, msg))
+            {
+                return;
+            }
             var opp = GetOpponent(client);
             switch (game.Act(name, msg))
             {
@@ -133,38 +122,22 @@ namespace Server
                 case 0:
                     client.SendMessage(game.GetMapS(name));
                     opp.SendMessage(game.GetMapS(opp.Name));
-                    opp.SendMessage("Your turn");
+                    opp.Turn();
                     break;
                 case 1:
-                    client.SendMessage("You win!!!");
-                    client.SendMessage(ResponseType.GameWin.ToString());
-                    opp.SendMessage(ResponseType.GameLose.ToString());
-                    opp.SendMessage("You lose :(");
-                    opp.StopPlaying(name, 0);
-                    client.StopPlaying(GetOpponent(name), 0);
+                    client.GameWin(opp.Name, 0);
+                    opp.GameLose(client.Name, 0);
                     StopGame(game);
                     break;
                 case 2:
-                    client.SendMessage("You lose!!!");
-                    client.SendMessage(ResponseType.GameLose.ToString());
-                    opp.SendMessage(ResponseType.GameWin.ToString());
-                    opp.SendMessage("You win!!!");
-                    opp.StopPlaying(name, 0);
-                    client.StopPlaying(opp.Name, 0);
+                    client.GameLose(opp.Name, 0);
+                    opp.GameWin(client.Name, 0);
                     StopGame(game);
-
                     break;
                 case 3:
-                    client.SendMessage("It's a draw!");
-                    opp.SendMessage("It's a draw!");
-                    client.StopPlaying(opp.Name, 0);
-                    opp.StopPlaying(name, 0);
-
-                    opp.SendMessage(ResponseType.GameStop.ToString());
-                    client.SendMessage(ResponseType.GameStop.ToString());
-
+                    client.GameDraw(opp.Name, 0);
+                    opp.GameDraw(client.Name, 0);
                     StopGame(game);
-
                     break;
                 default:
                     break;

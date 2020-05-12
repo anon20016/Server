@@ -191,6 +191,9 @@ namespace Server
                 {
                     CommandStop();
                 } //BStop
+
+                game.Act(this, sb.ToString());
+
                 if (game.HasPlayer(Name))
                 {
                     if (game.CheckFormat(Name, sb.ToString()))
@@ -205,6 +208,26 @@ namespace Server
             }
         }
 
+        public void GameWin(string nameOpponent, int idGame)
+        {
+            SendMessage(ResponseType.GameWin.ToString());
+            StopPlaying(nameOpponent, idGame);
+        }
+        public void GameLose(string nameOpponent, int idGame)
+        {
+            SendMessage(ResponseType.GameLose.ToString());
+            StopPlaying(nameOpponent, idGame);
+        }
+        public void GameDraw(string nameOpponent, int idGame)
+        {
+            SendMessage(ResponseType.GameDraw.ToString());
+            StopPlaying(nameOpponent, idGame);
+        }
+        public void Turn()
+        {
+            SendMessage(ResponseType.YourTurn.ToString());
+        }
+
         public void StartPlaying(string nameOpponent, int idGame)
         {
             SendMessage("Start playing with " + nameOpponent);
@@ -213,9 +236,7 @@ namespace Server
         }
         public void StopPlaying(string nameOpponent, int idGame)
         {
-            SendMessage("Game ended");
             SendMessage(ResponseType.GameStop.ToString());
-
             StatusClient = Status.Verified;
         }
 
@@ -224,7 +245,7 @@ namespace Server
             try
             {
                 StatusClient = Status.Verified;
-                SendClient("Opponent disconected :(");
+                SendClient(ResponseType.OpponentDisconnected.ToString());
                 SendClient(ResponseType.GameStop.ToString());
             }
             catch (IOException)

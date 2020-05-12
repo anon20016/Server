@@ -12,13 +12,13 @@ namespace TicTacToyNamespace
         {
             Name = name;
             Score = 0;
-            clear();
+            Clear();
         }
         public string Name { get; set; }
         public int Score { get; set; }
         public int[,] Map { get; set; } = new int[3, 3];
 
-        private void clear()
+        private void Clear()
         {
             for (int i = 0; i < 9; i++)
             {

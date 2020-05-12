@@ -22,7 +22,10 @@ namespace Server
         GameStart,
         GameStop,
         GameWin, 
-        GameLose
+        GameLose, 
+        GameDraw,
+        OpponentDisconnected,
+        YourTurn
     }
 
     class TCPSerever
